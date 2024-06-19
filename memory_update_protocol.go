@@ -1,6 +1,7 @@
 package secure_hardware_extension
 
 import (
+	"fmt"
 	"log"
 	"slices"
 )
@@ -24,35 +25,35 @@ func NewMemoryUpdateProtocolFromMessage(msg *MemoryUpdateMessage) *MemoryUpdateP
 	return NewMemoryUpdateProtocol(info)
 }
 
-func (proto *MemoryUpdateProtocol) GetK1() ([]byte, error) {
+func (proto *MemoryUpdateProtocol) GetK1() (SheBytes, error) {
 	return MiyaguchiPreneel(proto.Info.AuthKey, KEY_UPDATE_ENC_C)
 }
 
-func (proto *MemoryUpdateProtocol) GetK2() ([]byte, error) {
+func (proto *MemoryUpdateProtocol) GetK2() (SheBytes, error) {
 	return MiyaguchiPreneel(proto.Info.AuthKey, KEY_UPDATE_MAC_C)
 }
 
-func (proto *MemoryUpdateProtocol) GetK3() ([]byte, error) {
+func (proto *MemoryUpdateProtocol) GetK3() (SheBytes, error) {
 	return MiyaguchiPreneel(proto.Info.NewKey, KEY_UPDATE_ENC_C)
 }
 
-func (proto *MemoryUpdateProtocol) GetK4() ([]byte, error) {
+func (proto *MemoryUpdateProtocol) GetK4() (SheBytes, error) {
 	return MiyaguchiPreneel(proto.Info.NewKey, KEY_UPDATE_MAC_C)
 }
 
-func (proto *MemoryUpdateProtocol) GetM1() ([]byte, error) {
+func (proto *MemoryUpdateProtocol) GetM1() (SheBytes, error) {
 	// make a copy
 	m1 := slices.Clone(proto.Info.UID)
 	m1 = append(m1, (byte(proto.Info.NewKeyID<<4 | proto.Info.AuthKeyID&0x0F)))
 	return m1, nil
 }
 
-func (proto *MemoryUpdateProtocol) GetM2() ([]byte, error) {
+func (proto *MemoryUpdateProtocol) GetM2() (SheBytes, error) {
 
 	counter := proto.Info.Counter
 	flag := proto.Info.Flags
-	m2Plain := make([]byte, 16)
-	iv := make([]byte, 16)
+	m2Plain := make(SheBytes, 16)
+	iv := make(SheBytes, 16)
 
 	counter = counter << 4
 	m2Plain[0] = byte((counter >> 24) & 0xFF)
@@ -70,7 +71,7 @@ func (proto *MemoryUpdateProtocol) GetM2() ([]byte, error) {
 	return EncryptAesCBC(k1, m2Plain, iv)
 }
 
-func (proto *MemoryUpdateProtocol) GetM3() ([]byte, error) {
+func (proto *MemoryUpdateProtocol) GetM3() (SheBytes, error) {
 
 	m1, err1 := proto.GetM1()
 	if nil != err1 {
@@ -91,10 +92,10 @@ func (proto *MemoryUpdateProtocol) GetM3() ([]byte, error) {
 	return CmacAES(k2, m3Plain)
 }
 
-func (proto *MemoryUpdateProtocol) GetM4() ([]byte, error) {
+func (proto *MemoryUpdateProtocol) GetM4() (SheBytes, error) {
 
 	counter := proto.Info.Counter
-	plain := make([]byte, 16)
+	plain := make(SheBytes, 16)
 
 	counter = counter << 4
 	plain[0] = byte((counter >> 24) & 0xFF)
@@ -121,7 +122,7 @@ func (proto *MemoryUpdateProtocol) GetM4() ([]byte, error) {
 	return m1, nil
 }
 
-func (proto *MemoryUpdateProtocol) GetM5() ([]byte, error) {
+func (proto *MemoryUpdateProtocol) GetM5() (SheBytes, error) {
 
 	k4, err := proto.GetK4()
 
@@ -136,4 +137,15 @@ func (proto *MemoryUpdateProtocol) GetM5() ([]byte, error) {
 	}
 
 	return CmacAES(k4, m4)
+}
+
+func (proto MemoryUpdateProtocol) String() string {
+
+	m1, _ := proto.GetM1()
+	m2, _ := proto.GetM2()
+	m3, _ := proto.GetM3()
+	m4, _ := proto.GetM4()
+	m5, _ := proto.GetM5()
+
+	return fmt.Sprintf("\r\nkey id: %d\r\nm1: %s \r\nm2: %s \r\nm3: %s\r\nm4: %s\r\nm5: %s\r\n", proto.Info.NewKeyID, m1, m2, m3, m4, m5)
 }

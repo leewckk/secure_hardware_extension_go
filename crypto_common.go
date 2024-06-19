@@ -9,7 +9,7 @@ import (
 )
 
 // EncryptAesCBC encrypts data using AES CBC
-func EncryptAesCBC(key, data, iv []byte) ([]byte, error) {
+func EncryptAesCBC(key, data, iv SheBytes) (SheBytes, error) {
 
 	if len(iv) != 16 || len(key) != 16 {
 		return nil, errors.New("invalid iv or key length")
@@ -24,14 +24,14 @@ func EncryptAesCBC(key, data, iv []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	cipherText := make([]byte, len(data))
+	cipherText := make(SheBytes, len(data))
 	mode := cipher.NewCBCEncrypter(block, iv)
 	mode.CryptBlocks(cipherText, data)
 	return cipherText, nil
 }
 
 // DecryptAesCBC decrypts data using AES CBC
-func DecryptAesCBC(key, data, iv []byte) ([]byte, error) {
+func DecryptAesCBC(key, data, iv SheBytes) (SheBytes, error) {
 
 	if len(iv) != 16 || len(key) != 16 {
 		return nil, errors.New("invalid iv or key length")
@@ -46,14 +46,14 @@ func DecryptAesCBC(key, data, iv []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	plainText := make([]byte, len(data))
+	plainText := make(SheBytes, len(data))
 	mode := cipher.NewCBCDecrypter(block, iv)
 	mode.CryptBlocks(plainText, data)
 	return plainText, nil
 }
 
 // EncryptAesECB encrypts data using AES ECB
-func EncryptAesECB(key, data []byte) ([]byte, error) {
+func EncryptAesECB(key, data SheBytes) (SheBytes, error) {
 
 	if len(key) != 16 || (len(data)%aes.BlockSize != 0) {
 		return nil, errors.New("invalid key len or data size")
@@ -64,7 +64,7 @@ func EncryptAesECB(key, data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	cipherText := make([]byte, len(data))
+	cipherText := make(SheBytes, len(data))
 
 	for start := 0; start < len(data); start += aes.BlockSize {
 		block.Encrypt(cipherText[start:start+aes.BlockSize], data[start:start+aes.BlockSize])
@@ -73,7 +73,7 @@ func EncryptAesECB(key, data []byte) ([]byte, error) {
 }
 
 // DecryptAesECB decrypts data using AES ECB
-func DecryptAesECB(key, data []byte) ([]byte, error) {
+func DecryptAesECB(key, data SheBytes) (SheBytes, error) {
 
 	if len(key) != 16 || (len(data)%aes.BlockSize != 0) {
 		return nil, errors.New("invalid key len or data size")
@@ -84,7 +84,7 @@ func DecryptAesECB(key, data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	plainText := make([]byte, len(data))
+	plainText := make(SheBytes, len(data))
 
 	for start := 0; start < len(data); start += aes.BlockSize {
 		block.Decrypt(plainText[start:start+aes.BlockSize], data[start:start+aes.BlockSize])
@@ -93,7 +93,7 @@ func DecryptAesECB(key, data []byte) ([]byte, error) {
 }
 
 // CmacAES calculate block cmac value
-func CmacAES(key, data []byte) ([]byte, error) {
+func CmacAES(key, data SheBytes) (SheBytes, error) {
 
 	block, err := aes.NewCipher(key)
 	if nil != err {
@@ -105,12 +105,12 @@ func CmacAES(key, data []byte) ([]byte, error) {
 }
 
 // XorBytes performs XOR operation on two byte slices
-func xorBytes(a, b []byte) []byte {
+func xorBytes(a, b SheBytes) SheBytes {
 	n := len(a)
 	if len(b) < n {
 		n = len(b)
 	}
-	dst := make([]byte, n)
+	dst := make(SheBytes, n)
 	for i := 0; i < n; i++ {
 		dst[i] = a[i] ^ b[i]
 	}
@@ -118,13 +118,13 @@ func xorBytes(a, b []byte) []byte {
 }
 
 // MiyaguchiPreneel compresses input data using Miyaguchi-Preneel construction
-func MiyaguchiPreneel(authKey, data []byte) ([]byte, error) {
+func MiyaguchiPreneel(authKey, data SheBytes) (SheBytes, error) {
 
-	messages := make([][]byte, 2)
+	messages := make([]SheBytes, 2)
 	messages[0] = authKey
 	messages[1] = data
 
-	key := make([]byte, 16)
+	key := make(SheBytes, 16)
 	for _, message := range messages {
 		// Encrypt the data in ECB mode
 		encrypted, err := EncryptAesECB(key, message)

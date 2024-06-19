@@ -6,12 +6,12 @@ import (
 )
 
 var (
-	KEY_UPDATE_ENC_C SheBytes = decodeHex("010153484500800000000000000000B0")
-	KEY_UPDATE_MAC_C SheBytes = decodeHex("010253484500800000000000000000B0")
-	DEBUG_KEY_C      SheBytes = decodeHex("010353484500800000000000000000B0")
-	PRNG_KEY_C       SheBytes = decodeHex("010453484500800000000000000000B0")
-	PRNG_SEED_KEY_C  SheBytes = decodeHex("010553484500800000000000000000B0")
-	PRNG_EXTENSION_C SheBytes = decodeHex("80000000000000000000000000000100")
+	KEY_UPDATE_ENC_C SheBytes = DecodeHex("010153484500800000000000000000B0")
+	KEY_UPDATE_MAC_C SheBytes = DecodeHex("010253484500800000000000000000B0")
+	DEBUG_KEY_C      SheBytes = DecodeHex("010353484500800000000000000000B0")
+	PRNG_KEY_C       SheBytes = DecodeHex("010453484500800000000000000000B0")
+	PRNG_SEED_KEY_C  SheBytes = DecodeHex("010553484500800000000000000000B0")
+	PRNG_EXTENSION_C SheBytes = DecodeHex("80000000000000000000000000000100")
 )
 
 const (
@@ -41,7 +41,7 @@ const (
 	RAM_KEY
 )
 
-func decodeHex(s string) SheBytes {
+func DecodeHex(s string) SheBytes {
 	bytes, err := hex.DecodeString(s)
 	if err != nil {
 		log.Fatalf("failed to decode hex string: %v", err)

@@ -65,9 +65,9 @@ func NewMemoryUpdateInfoFromMessage(msg *MemoryUpdateMessage) (*MemoryUpdateInfo
 	return NewMemoryUpdateInfo(newKey, authKey, uint8(newKeyId), uint8(authKeyId), uint32(counter), uid, SecurityFlags(fid)), nil
 }
 
-func (m *MemoryUpdateInfo) String() string {
+func (m MemoryUpdateInfo) String() string {
 
-	return fmt.Sprintf("new_key_id: 0x%02x, new_key : %x, auth_id: 0x%02x, auth_key: %x, counter: %d, uid : %x, flags: %x",
-		m.NewKeyID, m.AuthKey, m.AuthKeyID, m.AuthKey, m.Counter, m.UID, m.Flags)
+	return fmt.Sprintf("new_key_id: 0x%02x, new_key : %s, \r\nauth_id: 0x%02x, auth_key: %s, \r\ncounter: %d, uid : %s, \r\nflags: %x",
+		m.NewKeyID, m.NewKey, m.AuthKeyID, m.AuthKey, m.Counter, m.UID, m.Flags)
 
 }
