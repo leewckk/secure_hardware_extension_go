@@ -17,7 +17,7 @@ Features:
 
 
 
-`golang` 1.18 or later
+`golang` 1.21 or later
 
 
 
