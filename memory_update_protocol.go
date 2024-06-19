@@ -3,7 +3,6 @@ package secure_hardware_extension
 import (
 	"fmt"
 	"log"
-	"slices"
 )
 
 type MemoryUpdateProtocol struct {
@@ -43,7 +42,8 @@ func (proto *MemoryUpdateProtocol) GetK4() (SheBytes, error) {
 
 func (proto *MemoryUpdateProtocol) GetM1() (SheBytes, error) {
 	// make a copy
-	m1 := slices.Clone(proto.Info.UID)
+	// m1 := slices.Clone(proto.Info.UID)
+	m1 := append(SheBytes{}, proto.Info.UID...)
 	m1 = append(m1, (byte(proto.Info.NewKeyID<<4 | proto.Info.AuthKeyID&0x0F)))
 	return m1, nil
 }
